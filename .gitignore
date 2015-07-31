@@ -1,5 +1,7 @@
 # Misc
 node_modules
+build
+dist
 
 # Compiled source #
 ###################
