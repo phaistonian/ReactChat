@@ -1,0 +1,45 @@
+$avatar_size = 36px;
+
+* {
+  font: 14px normal 'Avenir Next', 'Helvetica';
+  box-sizing: border-box;
+}
+ol {
+  max-height: 400px;
+  overflow: auto;
+}
+ol, li {
+  list-style-type: none;
+  padding-left: 0;
+}
+li {
+  margin: 10px 0;
+  padding-left: ($avatar_size + 10);
+  position: relative;
+  min-height: $avatar_size + 10;
+
+  &:before {
+    content: "";
+    width: $avatar_size;
+    height: $avatar_size;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #eee;
+  }
+
+  &:hover {
+    &:before {
+      background-color: #ccc;
+    }
+  }
+
+}
+input {
+  width: 100%;
+  padding: 5px;
+}
+strong {
+  display: block;
+  font-weight: bold;
+}
