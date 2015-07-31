@@ -18,6 +18,7 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { provide, connect } from 'react-redux';
 import thunk from 'redux-thunk';
 import Rebase from 're-base';
+import { messages, app } from './reducers';
 import './styles.styl';
 
 import Chat from './Components/chat';
@@ -25,34 +26,8 @@ import Chat from './Components/chat';
 const allMessages = localStorage.messages ? JSON.parse(localStorage.messages) : [];
 const base = Rebase.createClass('https://reduxchat.firebaseio.com');
 
-// Reducers
-const initialState = [];
-function messages(state = initialState, action) {
-  switch(action.type) {
-    case 'LOAD':
-      return action.messages;
-    case 'ADD':
-      return [...state, {
-        content: action.content,
-        user: action.user,
-        timestamp: Date.now()
-      }];
-    default:
-      return state;
-  }
-}
 
-const initialAppState = {
-  username: 'phaistonian'
-};
-function app(state = initialAppState, action) {
-  switch(action.type) {
-    case 'CHANGE_USERNAME':
-      return {...state, username: action.username};
-    default:
-      return state;
-  }
-}
+
 
 // Action (creators)
 function add (content, user) {
