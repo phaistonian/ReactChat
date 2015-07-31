@@ -4,8 +4,16 @@ $avatar_size = 36px;
   font: 14px normal 'Avenir Next', 'Helvetica';
   box-sizing: border-box;
 }
+html, body {
+  height: 100%;
+}
+
+body > div {
+  padding: 50px;
+}
+
 ol {
-  max-height: 400px;
+  height: 500px;
   overflow: auto;
 }
 ol, li {
@@ -30,16 +38,42 @@ li {
 
   &:hover {
     &:before {
-      background-color: #ccc;
+      background-color: red;
     }
   }
 
+  &.me strong {
+    color: blue !important;
+  }
 }
+
+
 input {
   width: 100%;
-  padding: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+
+  &:focus {
+    outline: none;
+    border-color: #888;
+  }
 }
 strong {
   display: block;
   font-weight: bold;
 }
+
+p {
+  margin-top: 20px;
+
+  u {
+    color: lighten(blue, 40%);
+    cursor: pointer;
+
+    &:hover {
+      color: blue;
+    }
+  }
+}
+
+

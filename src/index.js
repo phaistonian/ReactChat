@@ -14,11 +14,13 @@ users {
 messages [ messageId ]
 */
 import React, { Component } from 'react';
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { provide, connect } from 'react-redux';
 import thunk from 'redux-thunk';
 import Rebase from 're-base';
 import './styles.styl';
+
+import Chat from './Components/chat';
 
 const allMessages = localStorage.messages ? JSON.parse(localStorage.messages) : [];
 const base = Rebase.createClass('https://reduxchat.firebaseio.com');
@@ -40,6 +42,17 @@ function messages(state = initialState, action) {
   }
 }
 
+const initialAppState = {
+  username: 'phaistonian'
+};
+function app(state = initialAppState, action) {
+  switch(action.type) {
+    case 'CHANGE_USERNAME':
+      return {...state, username: action.username};
+    default:
+      return state;
+  }
+}
 
 // Action (creators)
 function add (content, user) {
@@ -50,32 +63,40 @@ function add (content, user) {
   };
 }
 
-function load (loadedMessages) {
-  return {
-    type: 'LOAD',
-    messages: loadedMessages
-  };
-}
+// function load (loadedMessages) {
+//   return {
+//     type: 'LOAD',
+//     messages: loadedMessages
+//   };
+// }
 
-function beginAddding (content, user) {
-  return async dispatch => {
-    return new Promise( (resolve) => {
-      allMessages.push({ content, user });
-      localStorage.messages = JSON.stringify(allMessages);
-      dispatch(add(content, user));
-      resolve();
-    });
+// function beginAddding (content, user) {
+//   return async dispatch => {
+//     return new Promise( (resolve) => {
+//       allMessages.push({ content, user });
+//       localStorage.messages = JSON.stringify(allMessages);
+//       dispatch(add(content, user));
+//       resolve();
+//     });
+//   };
+// }
+
+function changeUsername (username) {
+  return {
+    type: 'CHANGE_USERNAME',
+    username
   };
 }
 
 // App
+const reducer = combineReducers({messages, app});
 const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
-const store = createStoreWithMiddleware(messages);
+const store = createStoreWithMiddleware(reducer);
 
 
 
 @provide(store)
-@connect(state => ({messages: state}))
+@connect(state => state)
 class App extends Component {
   constructor (props) {
     super(props);
@@ -85,17 +106,9 @@ class App extends Component {
   }
 
   componentWillMount () {
-    //this.props.dispatch(load(allMessages));
-
-    let username = localStorage.username;
-    while (!username) {
-      username = window.prompt('Enter username, please');
+    if (!localStorage.username) {
+      this.promptForUsername();
     }
-
-    localStorage.username = username;
-    this.setState({
-      username: username
-    });
 
     base.bindToState('chats', {
       context: this,
@@ -108,106 +121,32 @@ class App extends Component {
       state: 'messages',
       asArray: true
     });
+
+    //this.props.dispatch(load(allMessages));
   }
 
   componentWillUnmount () {
     base.removeBinding(this.ref);
   }
 
-  componentWillUpdate () {
+  promptForUsername () {
+    let username;
 
+    while (!username) {
+      username = window.prompt('Enter username, please', this.props.app.username);
+    }
+
+    localStorage.username = username;
+    this.props.dispatch(changeUsername(username));
   }
 
   render () {
-    return <Chat dispatch={this.props.dispatch} messages={this.state.messages} username={this.state.username} />;
-  }
-}
-
-
-class Chat extends Component {
-  constructor (props) {
-    super(props);
-    this.state = {
-      content: '',
-      username: this.props.username
-    };
-  }
-
-  componentWillReceiveProps () {
-    setTimeout(::this.gotoBottom, 1);
-  }
-
-  handleSubmit (event) {
-    event.preventDefault();
-    this.props.dispatch(beginAddding(this.state.content, this.state.user));
-    this.setState({
-      content: null
-    });
-
-
-    base.post('chats', {
-      data: this.props.messages.concat([{
-        user: this.state.username,
-        content: this.state.content
-      }]),
-      context: this,
-      /*
-       * This 'then' method will run after the
-       * post has finished.
-       */
-      then: () => {
-        console.log('POSTED');
-      }
-    });
-  }
-
-  handleChange (event) {
-    this.setState({content: event.target.value});
-  }
-
-   handleChangeUserame (event) {
-    this.setState({username: event.target.value});
-  }
-
-  gotoBottom () {
-    let list = React.findDOMNode(this.refs.list);
-    list.scrollTop = list.scrollHeight;
-  }
-
-  render () {
-    return (
-      <div>
-        <div>
-          <ol ref="list">
-            {this.props.messages.map((message, index) => {
-              return (
-                <li key={`index-${index}`}>
-                  <strong>{message.user}</strong>
-                  {message.content}
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-        <form onSubmit={::this.handleSubmit}>
-          <input
-            type="text"
-            placeholder="Chat here .."
-            autoFocus="true"
-            ref="input"
-            value={this.state.content}
-            onChange={::this.handleChange}
-          />
-        </form>
-
-        <hr />
-
-        <details>
-          <summary>Set username</summary>
-          <input type="text" value={this.state.username} onChange={::this.handleChangeUserame} />
-        </details>
-      </div>
-    );
+    return <Chat
+      promptForUsername={::this.promptForUsername}
+      username={this.props.app.username}
+      dispatch={this.props.dispatch}
+      messages={this.state.messages}
+    />;
   }
 }
 
