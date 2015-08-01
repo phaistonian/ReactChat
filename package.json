@@ -6,7 +6,7 @@
   "author": "George Papadakis",
   "scripts": {
     "start": "node server/server.js",
-    "deploy": "webpack -p --config webpack.production.config.js",
+    "deploy": "NODE_ENV=development webpack -p --display-modules --config webpack.production.config.js",
     "watch": "webpack --watch"
   },
   "keywords": [
@@ -43,5 +43,8 @@
   "repository": {
     "type": "git",
     "url": "not yet"
+  },
+  "dependencies": {
+    "webpack-stats-plugin": "^0.1.0"
   }
 }

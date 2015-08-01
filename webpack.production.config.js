@@ -1,4 +1,5 @@
 var path = require('path');
+var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 var config = {
@@ -28,7 +29,16 @@ var config = {
     ]
   },
   plugins: [
-    new ExtractTextPlugin('app.css', { allChunks: true })
+    new ExtractTextPlugin('app.css', { allChunks: true }),
+    new webpack.optimize.UglifyJsPlugin(),
+    new webpack.optimize.DedupePlugin(),
+    new webpack.optimize.OccurenceOrderPlugin(),
+    new webpack.DefinePlugin({
+      'process.env': {
+        // This has effect on the react lib size
+        'NODE_ENV': JSON.stringify('production')
+      }
+    })
   ]
 };
 
