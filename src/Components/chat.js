@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Rebase from 're-base';
+import { TransitionSpring } from 'react-motion';
 
 const base = Rebase.createClass('https://reduxchat.firebaseio.com');
 
@@ -45,27 +46,67 @@ export default class Chat extends Component {
   }
 
   gotoBottom () {
-    let list = React.findDOMNode(this.refs.list);
+    let list = React.findDOMNode(this.refs.list).querySelector('ol');
     list.scrollTop = list.scrollHeight;
   }
 
   render () {
+    const willEnter = (key) => ({
+      opacity: { val: 1, config: [100, 20]},
+      text: key
+    });
+
+    const { messages } = this.props;
+
+    const endValue = () => {
+      let config = {};
+
+      messages.forEach(function (message, index) {
+        config[`index-${index}`] = {
+          opacity: { val: 1}
+        };
+      });
+
+      return config;
+    };
+
+    const defaultValue = () => {
+      let config = {};
+
+      messages.forEach(function (message, index) {
+        config[`index-${index}`] = {
+          opacity: { val: 0 }
+        };
+      });
+
+      return config;
+    };
+
+
     return (
       <div>
-        <div>
-          <ol ref="list">
-            {this.props.messages.map((message, index) => {
-              return (
-                <li
-                  key={`index-${index}`}
-                  className={message.user === this.props.username ? 'me' : null}
-                  >
-                  <strong>{message.user}</strong>
-                  {message.content}
-                </li>
-              );
-            })}
-          </ol>
+        <div ref="list">
+            <TransitionSpring
+              defaultValue={defaultValue()}
+              endValue={endValue()}
+              willEnter={willEnter}>
+              {currentValue =>
+                <ol>
+                  {this.props.messages.map((message, index) => {
+                    return (
+                      <li
+                        key={`index-${index}`}
+                        style={{opacity: currentValue[`index-${index}`].opacity}}
+                        className={message.user === this.props.username ? 'me' : null}
+                        >
+                        <strong>{message.user} {currentValue[`index-${index}`].opacity}</strong>
+                        {message.content}
+                      </li>
+                    );
+                  })}
+                </ol>
+              }
+            </TransitionSpring>
         </div>
         <form onSubmit={::this.handleSubmit}>
           <input
